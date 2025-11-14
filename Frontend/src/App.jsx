@@ -4,7 +4,7 @@ function App() {
 
   return (
     <>
-      <div>This is Frontend</div>
+      <div className="bg-red-300">This is Frontend</div>
     </>
   )
 }

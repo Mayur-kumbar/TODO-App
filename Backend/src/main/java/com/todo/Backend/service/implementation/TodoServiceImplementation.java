@@ -1,6 +1,7 @@
 package com.todo.Backend.service.implementation;
 
 import com.todo.Backend.dto.TodoDTO;
+import com.todo.Backend.exception.TodoNotFoundException;
 import com.todo.Backend.model.Todo;
 import com.todo.Backend.repository.TodoRepository;
 import com.todo.Backend.service.TodoService;
@@ -54,14 +55,14 @@ public class TodoServiceImplementation implements TodoService {
     @Override
     public TodoDTO getTodoByID(Long id) {
         Todo todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+                .orElseThrow(() -> new TodoNotFoundException(id));
         return mapToDTO(todo);
     }
 
     @Override
     public TodoDTO updateTodo(Long id, TodoDTO todoDTO) {
         Todo existing = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+                .orElseThrow(() -> new TodoNotFoundException(id));
 
         if(todoDTO.getTitle() != null){
             existing.setTitle(todoDTO.getTitle());
@@ -82,7 +83,7 @@ public class TodoServiceImplementation implements TodoService {
     @Override
     public void deleteTodo(Long id) {
         Todo existing = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+                .orElseThrow(() -> new TodoNotFoundException(id));
         todoRepository.delete(existing);
     }
 }

@@ -1,5 +1,7 @@
 package com.todo.Backend.security;
 
+import com.todo.Backend.model.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +17,10 @@ public class Jwtutil {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    public String generateToken(String email){
+    public String generateToken(User user){
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(user.getEmail())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -32,4 +35,12 @@ public class Jwtutil {
                 .getSubject();
     }
 
+    public Long extractUserId(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("userID", Long.class);
+    }
 }

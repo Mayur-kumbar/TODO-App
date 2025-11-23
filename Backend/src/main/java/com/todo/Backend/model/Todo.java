@@ -18,4 +18,6 @@ public class Todo {
     private String description;
 
     private boolean completed = false;
+
+    private Long userId;
 }

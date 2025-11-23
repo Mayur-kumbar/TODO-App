@@ -48,7 +48,7 @@ public class AuthService {
             throw new InvalidPasswordException("Invalid password");
         }
 
-        return jwtutil.generateToken(user.getEmail());
+        return jwtutil.generateToken(user);
     }
 
 

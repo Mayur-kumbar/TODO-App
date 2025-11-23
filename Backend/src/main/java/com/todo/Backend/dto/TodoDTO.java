@@ -14,4 +14,5 @@ public class TodoDTO {
 
     private String description;
     private boolean completed;
+    private Long userId;
 }

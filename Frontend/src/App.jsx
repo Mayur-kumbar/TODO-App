@@ -1,19 +1,22 @@
-import axios from "axios"
-import { useEffect } from "react"
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-
-function App() {
-
-  useEffect(()=>{
-    axios.get("http://localhost:8080/api/todos")
-    .then(res => console.log(res.data))
-  })
-
+export default function App(){
   return (
-    <>
-      <div className="bg-red-300">This is Frontend</div>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<div className="p-8">404 - Not Found</div>} />
+    </Routes>
+  );
 }
-
-export default App

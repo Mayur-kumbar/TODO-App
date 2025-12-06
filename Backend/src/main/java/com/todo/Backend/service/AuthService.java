@@ -1,5 +1,6 @@
 package com.todo.Backend.service;
 
+import com.todo.Backend.dto.AuthResponse;
 import com.todo.Backend.dto.LoginDTO;
 import com.todo.Backend.dto.RegisterDTO;
 import com.todo.Backend.exception.InvalidPasswordException;
@@ -27,7 +28,7 @@ public class AuthService {
     }
 
 
-    public void registerUser(RegisterDTO request){
+    public AuthResponse registerUser(RegisterDTO request){
         Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
         if(existingUser.isPresent()){
             throw new UserAlreadyExistException(request.getEmail());
@@ -35,12 +36,18 @@ public class AuthService {
 
         User user = new User();
         user.setEmail(request.getEmail());
+        user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        userRepository.save(user);
+        User saved = userRepository.save(user);
+
+        String token = jwtutil.generateToken(saved);
+
+        return new AuthResponse(token, saved.getId(), saved.getName(), saved.getEmail());
+
     }
 
-    public String loginUser(LoginDTO request){
+    public AuthResponse loginUser(LoginDTO request){
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -48,7 +55,8 @@ public class AuthService {
             throw new InvalidPasswordException("Invalid password");
         }
 
-        return jwtutil.generateToken(user);
+        String token = jwtutil.generateToken(user);
+        return new AuthResponse(token, user.getId(), user.getName(), user.getEmail());
     }
 
 

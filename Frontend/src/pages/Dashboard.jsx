@@ -2,38 +2,65 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/layout/Header";
 import TaskForm from "../components/todos/TaskForm";
 import TodoList from "../components/todos/TodoList";
-import { useAuth } from "../context/AuthContext";
 import "../pages/dashboard.css";
+import axios from "axios";
 
-/* storage key function */
-const todosKey = (email) => `todos_${email}`;
-
-function generateId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return "id_" + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-}
 
 export default function Dashboard(){
-  const { user } = useAuth();
   const [todos, setTodos] = useState([]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
-    if(user){
-      const raw = localStorage.getItem(todosKey(user.email));
-      setTodos(raw ? JSON.parse(raw) : []);
+    if(!localStorage.getItem("token")){
+      window.location.href = "/login";
+      return;
     }
-  }, [user]);
-
-  useEffect(() => {
-    if(user){
-      localStorage.setItem(todosKey(user.email), JSON.stringify(todos));
+    const fetchTodos = async () => {
+      const res = await axios.get("http://localhost:8080/api/todos",
+        { headers: {Authorization:
+          `Bearer ${localStorage.getItem("token")}`,
+          withCredentials: true
+        }
+}
+      );
+      setTodos(res.data);
+      console.log(res.data);
     }
-  }, [todos, user]);
 
-  const addTodo = ({ title, dueDate }) => {
-    setTodos(prev => [{ id: generateId(), title, done: false, dueDate: dueDate || null }, ...prev]);
+    const fetchUserData = async () => {
+      const res = await axios.get("http://localhost:8080/api/user",
+        { headers: {Authorization:
+          `Bearer ${localStorage.getItem("token")}`,
+          withCredentials: true
+        }
+}
+      );
+      setName(res.data.name);
+      setEmail(res.data.email);
+      console.log(res.data);
+    }
+    fetchUserData();
+    fetchTodos();
+  }, []);
+
+ 
+  const addTodo = async ({ title, description }) => {
+    const user = localStorage.getItem("user");
+    console.log(user);
+    if(!user){
+      window.location.href = "/login";
+      return;
+    }
+    const res = await axios.post("http://localhost:8080/api/todos", { title, description },
+      { headers: {Authorization:
+        `Bearer ${localStorage.getItem("token")}`,
+        withCredentials: true
+      }
+}
+    );
+    setTodos(prev => [res.data, ...prev]);
+    console.log(res.data);
   };
 
   const toggleTodo = (id) => {
@@ -50,11 +77,11 @@ export default function Dashboard(){
 
   return (
     <div className="dashboard-root">
-      <Header />
+      <Header name={name} email={email} />
       <main className="container">
         <div className="greeting-row">
           <div className="greeting-left">
-            <div className="title">Hello, {user?.name}</div>
+            <div className="title">Hello, {name}</div>
             <div className="subtitle">Here's your tasks for today</div>
           </div>
         </div>

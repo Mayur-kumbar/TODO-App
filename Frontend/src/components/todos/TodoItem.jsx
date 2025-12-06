@@ -1,34 +1,101 @@
 import React, { useState } from "react";
+import "./TodoItem.css";
+import axios from "axios";
 
-export default function TodoItem({ todo, onToggle, onUpdate, onDelete }){
+export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(todo.title);
+  const [title, setTitle] = useState(todo.title);
+  const [description, setDescription] = useState(todo.description || "");
 
-  const save = () => {
-    onUpdate(todo.id, { title: text });
-    setEditing(false);
+  const handleUpdate = async () => {
+    const res = await axios.patch(`http://localhost:8080/api/todos/${todo.id}`,
+      {title, description},
+      { headers: {Authorization:
+        `Bearer ${localStorage.getItem("token")}`,
+        withCredentials: true
+      }});
+    
+      onUpdate(todo.id, res.data);
+      setEditing(false);
+  };
+
+  const handleDelete = async () => {
+    await axios.delete(`http://localhost:8080/api/todos/${todo.id}`,
+      { headers: {Authorization:
+        `Bearer ${localStorage.getItem("token")}`,
+        withCredentials: true
+      }});
+    
+      onDelete(todo.id);
+  };
+
+  const handleCompleteToggle = async () => {
+    const res = await axios.patch(`http://localhost:8080/api/todos/${todo.id}`,
+      {title, description, completed: true },
+      { headers: {Authorization:
+        `Bearer ${localStorage.getItem("token")}`,
+        withCredentials: true
+      }});
+    
+      console.log("Toggled completion:", res.data);
+      onUpdate(todo.id, res.data);
   };
 
   return (
-    <li className="bg-white p-3 rounded shadow flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <input type="checkbox" checked={todo.done} onChange={()=>onToggle(todo.id)} />
-        <div>
+    <li className="todo-item">
+      <div className="todo-left">
+        <input
+          type="checkbox"
+          checked={todo.completed}
+          onChange={() => handleCompleteToggle()}
+          className="todo-checkbox"
+        />
+
+        {/* Content */}
+        <div className="todo-content">
           {editing ? (
-            <input value={text} onChange={e=>setText(e.target.value)} className="border rounded p-1" />
+            <div className="edit-group">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="edit-input"
+                placeholder="Title"
+              />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="edit-textarea"
+                placeholder="Description"
+              />
+            </div>
           ) : (
-            <div className={`font-medium ${todo.done ? "line-through text-slate-400" : ""}`}>{todo.title}</div>
+            <div>
+              <div className={`todo-title ${todo.done ? "done" : ""}`}>
+                {todo.title}
+              </div>
+
+              {todo.description && (
+                <div className="todo-description">{todo.description}</div>
+              )}
+            </div>
           )}
-          {todo.dueDate && <div className="text-xs text-slate-500">Due: {todo.dueDate}</div>}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+
+      <div className="todo-actions">
         {editing ? (
-          <button onClick={save} className="text-sm px-2 py-1 border rounded">Save</button>
+          <button onClick={handleUpdate} className="btn">
+            Save
+          </button>
         ) : (
-          <button onClick={()=>setEditing(true)} className="text-sm px-2 py-1 border rounded">Edit</button>
+          <button onClick={() => setEditing(true)} className="btn">
+            Edit
+          </button>
         )}
-        <button onClick={()=>onDelete(todo.id)} className="text-sm px-2 py-1 border rounded text-red-600">Delete</button>
+
+        <button onClick={handleDelete} className="btn delete-btn">
+          Delete
+        </button>
       </div>
     </li>
   );

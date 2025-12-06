@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import "./register.css";
+import axios from "axios";
 
 export default function Register(){
-  const { register } = useAuth();
   const nav = useNavigate();
 
   const [form, setForm] = useState({
@@ -62,11 +61,14 @@ export default function Register(){
     setLoading(true);
 
     try {
-      await register({
-        name: form.name.trim(),
-        email: form.email.trim(),
+      const response = await axios.post("http://localhost:8080/api/auth/register", {
+        name: form.name,
+        email: form.email,
         password: form.password
-      });
+      })
+      
+      localStorage.setItem("token", response.data.token)
+      console.log(response)
       nav("/dashboard");
     } catch (error) {
       setErr(error.message || "Registration failed");

@@ -10,29 +10,40 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final Jwtutil jwtutil;
+    private final Jwtutil jwtUtil;
 
-    public JwtAuthFilter(Jwtutil jwtutil){
-        this.jwtutil = jwtutil;
+    public JwtAuthFilter(Jwtutil jwtUtil) {
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
 
-        if(authHeader != null && authHeader.startsWith("Bearer ")){
-            String token = authHeader.substring(7);
-            String email = jwtutil.extractEmail(token);
-            Long userId = jwtutil.extractUserId(token);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7).trim();
 
-            if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, null, new ArrayList<>());
-                authenticationToken.setDetails(userId);
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            // basic validation: parse & verify signature/expiry
+            if (jwtUtil.validateToken(token)) {
+                String email = jwtUtil.extractEmail(token);
+                Long userId = jwtUtil.extractUserId(token);
+
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    // For now we use email as principal and set userId in details.
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+                    authenticationToken.setDetails(userId);
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
+            } else {
+                // token invalid or expired — we do not authenticate; proceed so later security chain can reject
             }
         }
 

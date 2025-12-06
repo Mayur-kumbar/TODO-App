@@ -58,6 +58,9 @@ public class TodoServiceImplementation implements TodoService {
     @Override
     public List<TodoDTO> getAllTodos() {
         Long userId = getCurrentUserId();
+        if (userId == null) {
+            throw new RuntimeException("Unauthenticated - user id missing");
+        }
         return todoRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToDTO)

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import "./login.css";
+import axios from "axios";
 
 export default function Login(){
-  const { login } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
@@ -19,8 +18,13 @@ export default function Login(){
     setErr("");
     setLoading(true);
     try {
-      await login(form);
-      nav(from, { replace: true });
+      const response = await axios.post("http://localhost:8080/api/auth/login", {
+        email: form.email,
+        password: form.password
+      });
+      localStorage.setItem("token", response.data.token);
+      console.log(response);
+      nav("/dashboard");
     } catch (error) {
       setErr(error?.message || "Login failed");
       setLoading(false);

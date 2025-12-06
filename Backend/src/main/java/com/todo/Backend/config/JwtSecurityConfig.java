@@ -20,16 +20,19 @@ public class JwtSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.csrf(csrf -> csrf.disable())
+        http
+                .cors() // <-- ENABLE CORS support so Security will use your CORS config
+                .and()
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/todos/**").authenticated()
-                                .anyRequest().authenticated()
-
-                        )
+                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers("/api/todos/**").authenticated()
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                        )
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

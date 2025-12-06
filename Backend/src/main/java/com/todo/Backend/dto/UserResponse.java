@@ -1,12 +1,15 @@
 package com.todo.Backend.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserResponse {
     private String name;
     private String email;
-    private String password;
 }

@@ -1,10 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-/* Header intentionally does not import Tailwind; dashboard.css will style page visuals */
+import { useEffect, useState } from "react";
 
-export default function Header(){
-  const { user, logout } = useAuth();
+export default function Header({name, email}) {
+  
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
     <header style={{ padding: 12, background: "transparent" }}>
       <div style={{
@@ -19,8 +23,8 @@ export default function Header(){
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 13, color: "#475569", textTransform: "lowercase" }}>{user?.name}</div>
-          <button onClick={logout} style={{
+          <div style={{ fontSize: 13, color: "#475569", textTransform: "lowercase" }}>{name}</div>
+          <button onClick={handleLogout} style={{
             padding: "8px 12px", borderRadius: 10, border: "1px solid #e6edf6", background: "white", cursor: "pointer", fontSize: 13
           }}>
             Logout

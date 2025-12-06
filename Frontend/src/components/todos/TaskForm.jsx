@@ -3,14 +3,14 @@ import "../../pages/dashboard.css";
 
 export default function TaskForm({ onAdd }){
   const [title, setTitle] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [description, setDescription] = useState("");
 
   const submit = (e) => {
     e.preventDefault();
     if(!title.trim()) return;
-    onAdd({ title: title.trim(), dueDate: dueDate || null });
+    onAdd({ title: title.trim(), description: description || null });
     setTitle("");
-    setDueDate("");
+    setDescription("");
   };
 
   return (
@@ -24,10 +24,11 @@ export default function TaskForm({ onAdd }){
       />
       <input
         className="date-input"
-        value={dueDate}
-        onChange={e => setDueDate(e.target.value)}
-        type="date"
-        aria-label="Due date"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        type="text"
+        aria-label="description"
+        placeholder="description"
       />
       <button className="add-btn" type="submit">Add</button>
     </form>
